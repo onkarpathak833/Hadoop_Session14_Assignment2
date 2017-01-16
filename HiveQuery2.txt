@@ -1,0 +1,64 @@
+
+LOAD DATA INPATH '/user/hive/Dataset14_1.txt' INTO TABLE TEMPERATURE_DATA;
+
+1]
+
+hive> SELECT TEMP_DATE, TEMPERATURE FROM TEMPERATURE_DATA WHERE ZIPCODE > 300000 AND ZIPCODE < 399999;
+OK
+10-03-1990	15
+10-01-1991	22
+12-02-1990	9
+10-03-1991	16
+10-01-1990	23
+12-02-1991	10
+10-03-1993	16
+10-01-1994	23
+12-02-1991	10
+10-03-1991	16
+10-01-1990	23
+12-02-1991	10
+Time taken: 0.137 seconds, Fetched: 12 row(s)
+hive> 
+
+2] 
+
+hive> SELECT year(from_unixtime(unix_timestamp(TEMP_DATE,'dd-MM-yyyy'))) AS YEAR, MAX(TEMPERATURE) FROM TEMPERATURE_DATA GROUP BY year(from_unixtime(unix_timestamp(TEMP_DATE,'dd-MM-yyyy')));
+
+OK
+1990	23
+1991	22
+1993	16
+1994	23
+Time taken: 35.417 seconds, Fetched: 4 row(s)
+hive> 
+
+3]
+
+
+hive> SELECT year(from_unixtime(unix_timestamp(TEMP_DATE,'dd-MM-yyyy'))) AS YEAR, MAX(TEMPERATURE) FROM TEMPERATURE_DATA GROUP BY year(from_unixtime(unix_timestamp(TEMP_DATE,'dd-MM-yyyy'))) HAVING COUNT(year(from_unixtime(unix_timestamp(TEMP_DATE,'dd-MM-yyyy')))) >=2;
+
+
+Total MapReduce CPU Time Spent: 4 seconds 710 msec
+OK
+1990	23
+1991	22
+1993	16
+1994	23
+Time taken: 34.207 seconds, Fetched: 4 row(s)
+hive> 
+
+4]
+
+hive> CREATE VIEW TEMPERATURE_DATA_VW AS SELECT year(from_unixtime(unix_timestamp(TEMP_DATE,'dd-MM-yyyy'))) AS YEAR, MAX(TEMPERATURE) FROM TEMPERATURE_DATA GROUP BY year(from_unixtime(unix_timestamp(TEMP_DATE,'dd-MM-yyyy'))) HAVING COUNT(year(from_unixtime(unix_timestamp(TEMP_DATE,'dd-MM-yyyy')))) >=2;
+
+
+5]
+
+hive> INSERT OVERWRITE LOCAL DIRECTORY '/home/acadgild/Onkar/Session14/HiveExport' ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' SELECT * FROM TEMPERATURE_DATA_VW;
+
+Output :::
+
+1990|23
+1991|22
+1993|16
+1994|23
